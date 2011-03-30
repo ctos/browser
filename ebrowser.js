@@ -9,96 +9,40 @@ qx.Class.define("twitter.MainWindow",
 {
 	extend: qx.ui.window.Window,
 	
-	construct : function()
+	construct : function(app)
 	{
 		
 		this.base(arguments, "EYEs on ME BROWSER", "index.php?extern=/images/16x16/status/user-online.png");
-
-		// hide the window buttons
-		//this.setShowClose(false);
-		//this.setShowMaximize(false);
-		//this.setShowMinimize(false);
-
-		this.setWidth(700);
-		this.setHeight(500);
-
-		var layout = new qx.ui.layout.Grid(0, 0);
+		this.setShowStatusbar(true);
+		var layout = new qx.ui.layout.VBox();
 		this.setLayout(layout);
-
-		var Menubar = new qx.ui.menubar.MenuBar();
-		this.add(Menubar, {row: 0, column: 0});
-
-		var Toolbar = new qx.ui.toolbar.ToolBar();
-		this.add(Toolbar, {row: 1, column: 0});
-		Toolbar.setHeight(25);
 		
-		var ForwardButton = new qx.ui.toolbar.Button("","index.php?extern=/images/22x22/actions/arrow-right.png");
-		Toolbar.add(ForwardButton);
-		var BackwardButton = new qx.ui.toolbar.Button("","index.php?extern=/images/22x22/actions/arrow-left.png");
-		Toolbar.add(BackwardButton);
-		var StopButton = new qx.ui.toolbar.Button("","index.php?extern=/images/22x22/actions/dialog-close.png");
-		Toolbar.add(StopButton);		
-		var RefreshButton = new qx.ui.toolbar.Button("","index.php?extern=/images/22x22/actions/view-refresh.png");
-		Toolbar.add(RefreshButton);
+		var urlEditor = new qx.ui.form.TextField("").set({});
+		this.add(urlEditor);
 
-	
-		var addressarea = new qx.ui.form.TextArea();
-		addressarea.setPlaceholder("Enter Address here...");
-		this.add(addressarea, {row: 2, column: 0});
-		addressarea.setHeight(25);
-
+		urlEditor.addListener("keypress", function(e) {
+			if (e.getKeyIdentifier() == "Enter")
+			{
+				alert("keydown");
+			}
+                }, this);
+		var toolBar = new qx.ui.toolbar.ToolBar();
+		this.add(toolBar);
+		
+		var forwardButton = new qx.ui.toolbar.Button("",app.getExternFile("extern/forward.png"));
+		toolBar.add(forwardButton);
+		/*var frame = new qx.ui.embed.ThemedIframe("http://www.google.com").set({allowStretchY : true,  height : 400});
+		this.add(frame);
 		this.setContentPadding(0);
-		layout.setColumnFlex(0, 1);
+		alert(frame.getMaxHeight());
+                //layout.setColumnFlex(0, 1);*/
 
-
-		// FILE button
-		var fileButton = new qx.ui.menubar.Button("File(F)");
-		Menubar.add(fileButton);
-		// EDIT button
-		var editButton = new qx.ui.menubar.Button("Edit(E)");
-		Menubar.add(editButton);
-		// VIEW button
-		var viewButton = new qx.ui.menubar.Button("View(V)");
-		Menubar.add(viewButton);
-		// HISTORY button
-		var historyButton = new qx.ui.menubar.Button("History(H)");
-		Menubar.add(historyButton);
-
-		var goButton = new qx.ui.form.Button("Go","index.php?extern=/images/22x22/actions/go-next.png");
-		this.add(goButton,{row: 2,column: 1});
-
-
-		var iframe = new qx.ui.embed.Iframe(qx.util.ResourceManager.getInstance().toUri("http://localhost/"));
-		this.add(iframe, {row:  3,column:0 });
+		var tabView = new eyeos.ebrowser.WebView();
+		this.add(tabView, {flex:1});
 
 
 
-		this.add(Menubar, {row: 0, column: 0, colSpan: 2});
-		this.add(Toolbar, {row: 1, column: 0, colSpan: 2});
-
-		this.add(iframe, {row: 3, column: 0, colSpan: 2});
-		layout.setRowFlex(3, 3);
-
-
-		goButton.addListener("execute", function() {
-			this.fireDataEvent("post", addressarea.getValue());
-			iframe.setSource(addressarea.getValue());
-			iframe.reload();
-		}, this);
-
-		addressarea.addListener("input", function(e) {
-			var value = e.getData();
-			goButton.setEnabled(value.length > 0);
-		}, this);
-
-		goButton.setEnabled(false);
-
-	},
-	events :
-	{
-		"post": "qx.event.type.Data"
 	}
-
 
 });
 
@@ -110,19 +54,73 @@ qx.Class.define('eyeos.application.ebrowser',
 	construct: function(checknum, pid, args)
 	{
 		arguments.callee.base.call(this, 'ebrowser', checknum, pid);
+		this.hellovar = checknum;
 	},
 	members:
 	{
 		drawGUI: function()
 		{
-			var main = new twitter.MainWindow();
+			var main = new twitter.MainWindow(this).set({width : 800, height : 600});
 			main.open();
 			main.moveTo(100, 30);
 
 			main.addListener("post", function(e) {
 				alert(e.getData());
 			}, this);
+		},
+		getExternFile: function(path)
+		{
+			return "index.php?appName=ebrowser&appFile="+path+"&checknum="+this.hellovar;
 		}
 	}
 });
+
+qx.Class.define("eyeos.ebrowser.WebView",
+{
+	extend : qx.ui.tabview.TabView,
+	construct : function()
+	{
+                this.base(arguments);
+		var page1 = new eyeos.ebrowser.TabPage("page1");
+		this.add(page1);
+		var page2 = new eyeos.ebrowser.TabPage("");
+		this.add(page2);
+		alert(page1);
+		alert(page2);
+		this.addListener("changeSelection", function(e){
+//			alert(this.getChildren().length);
+//			pages = getSelection();
+//			alert(pages);
+//			alert(this.indexOf(pages[0])
+			//alert(e.getCurrentTarget());
+			alert(this.getSelection());
+			alert(e.getData() == page2);
+		}, this);
+	}
+});
+
+qx.Class.define("eyeos.ebrowser.TabPage",
+{
+        extend : qx.ui.tabview.Page,
+
+        construct : function(label)
+        {
+                this.base(arguments);
+		this.setLabel(label);
+		this.setShowCloseButton(true);
+        }
+});
+
+qx.Class.define("eyeos.ebrowser.NewPage",
+{
+        extend : qx.ui.tabview.Page,
+
+        construct : function()
+        {
+                this.base(arguments);
+                //this.setLabel(label);
+                //this.setShowCloseButton(true);
+        }
+});
+
 
