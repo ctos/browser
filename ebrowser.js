@@ -5,7 +5,7 @@ function ebrowser_application(checknum, pid, args)
 	app.drawGUI();
 }
 
-qx.Class.define("twitter.MainWindow",
+qx.Class.define("eyeos.ebrowser.MainWindow",
 {
 	extend: qx.ui.window.Window,
 	
@@ -14,6 +14,7 @@ qx.Class.define("twitter.MainWindow",
 		
 		this.base(arguments, "EYEs on ME BROWSER", "index.php?extern=/images/16x16/status/user-online.png");
 		this.setShowStatusbar(true);
+		this._tabView = new eyeos.ebrowser.WebView();
 		var layout = new qx.ui.layout.VBox;
 		layout.setSeparator("separator-vertical");
 		this.setLayout(layout);
@@ -49,7 +50,8 @@ qx.Class.define("twitter.MainWindow",
 		urlEditor.addListener("keypress", function(e) {
 			if (e.getKeyIdentifier() == "Enter")
 			{
-				alert("keydown");
+				this._tabView.gotoUrl(urlEditor.getValue());
+				//this._keyEnterPressed(urlEditor.getValue());
 			}
                 }, this);
 		headerComposite.add(urlEditor, {flex : 1});
@@ -78,13 +80,20 @@ qx.Class.define("twitter.MainWindow",
 		alert(frame.getMaxHeight());
                 //layout.setColumnFlex(0, 1);*/
 
-		var tabView = new eyeos.ebrowser.WebView();
-		this.add(tabView, {flex:1});
+		this.add(this._tabView, {flex:1});
 
 
 
+	},
+	members:
+	{
+		_tabView: null,
+		_keyEnterPressed: function(url)
+		{
+			this._tabView.gotoUrl(url);
+		}
 	}
-
+	
 });
 
 
@@ -101,7 +110,7 @@ qx.Class.define('eyeos.application.ebrowser',
 	{
 		drawGUI: function()
 		{
-			var main = new twitter.MainWindow(this).set({width : 800, height : 600});
+			var main = new eyeos.ebrowser.MainWindow(this).set({width : 800, height : 600});
 			main.open();
 			main.moveTo(100, 30);
 
@@ -137,6 +146,14 @@ qx.Class.define("eyeos.ebrowser.WebView",
 			alert(this.getSelection());
 			alert(e.getData() == page2);
 		}, this);
+	},
+	members:
+	{
+		gotoUrl: function(url)
+		{
+			var currentPage = this.getSelection()[0];
+			currentPage.load(url);
+		}
 	}
 });
 
@@ -149,7 +166,18 @@ qx.Class.define("eyeos.ebrowser.TabPage",
                 this.base(arguments);
 		this.setLabel(label);
 		this.setShowCloseButton(true);
-        }
+		this._htmlFrame = new qx.ui.embed.ThemedIframe("http://www.google.com");
+		this.setLayout(new qx.ui.layout.VBox);
+		this.add(this._htmlFrame, {flex:1});
+        },
+	members:
+	{
+		_htmlFrame: null,
+		load: function(url)
+		{
+			this._htmlFrame.setSource(url);
+		}
+	}
 });
 
 qx.Class.define("eyeos.ebrowser.NewPage",
