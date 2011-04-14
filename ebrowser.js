@@ -4,98 +4,7 @@ function ebrowser_application(checknum, pid, args)
 	var app = new eyeos.application.ebrowser(checknum, pid, args);
 	app.drawGUI();
 }
-
-qx.Class.define("eyeos.ebrowser.MainWindow",
-{
-	extend: qx.ui.window.Window,
 	
-	construct : function(app)
-	{
-		
-		this.base(arguments, "EYEs on ME BROWSER", "index.php?extern=/images/16x16/status/user-online.png");
-		this.setShowStatusbar(true);
-		this._tabView = new eyeos.ebrowser.WebView();
-		var layout = new qx.ui.layout.VBox;
-		layout.setSeparator("separator-vertical");
-		this.setLayout(layout);
-		var headerComposite = new qx.ui.container.Composite(new qx.ui.layout.HBox(4));
-		headerComposite.setPadding(10);
-//		headerComposite.setBackgroundColor("#121212");
-		this.add(headerComposite);
-	
-		var toolBar = new qx.ui.toolbar.ToolBar();
-		var backwardButton = new qx.ui.toolbar.Button("",app.getExternFile("extern/backward.png"));
-		backwardButton.setShow("icon");
-		toolBar.add(backwardButton);
-		var forwardButton = new qx.ui.toolbar.Button("",app.getExternFile("extern/forward.png"));
-		forwardButton.setShow("icon");
-		toolBar.add(forwardButton);
-		var homeButton = new qx.ui.toolbar.Button("",app.getExternFile("extern/home.png"));
-		homeButton.setShow("icon");
-		toolBar.add(homeButton);
-		var refreshButton = new qx.ui.toolbar.Button("",app.getExternFile("extern/refresh.png"));
-		refreshButton.setShow("icon");
-		toolBar.add(refreshButton);
-		headerComposite.add(toolBar);
-
-
-		var urlEditor = new qx.ui.form.TextField().set({
-			//allowGrowY : true,
-			allowGrowX : true,
-			placeholder : "Input url",
-			maxWidth : 1000,
-			minWidth : 400});
-		//this.add(urlEditor);
-
-		urlEditor.addListener("keypress", function(e) {
-			if (e.getKeyIdentifier() == "Enter")
-			{
-				this._tabView.gotoUrl(urlEditor.getValue());
-				//this._keyEnterPressed(urlEditor.getValue());
-			}
-                }, this);
-		headerComposite.add(urlEditor, {flex : 1});
-	
-		var rightToolBar = new qx.ui.toolbar.ToolBar();
-		var goButton = new qx.ui.toolbar.Button("",app.getExternFile("extern/go.png"));
-		goButton.setShow("icon");
-		rightToolBar.add(goButton);
-		var bookButton = new qx.ui.toolbar.Button("",app.getExternFile("extern/book.png"));
-		bookButton.setShow("icon");
-		rightToolBar.add(bookButton);
-		var historyButton = new qx.ui.toolbar.Button("",app.getExternFile("extern/history.png"));
-		historyButton.setShow("icon");
-		rightToolBar.add(historyButton);
-
-		var mainMenu = new qx.ui.menu.Menu();
-		var undoButton = new qx.ui.menu.Button("Undo", "icon/16/actions/edit-undo.png");
-		mainMenu.add(undoButton);
-		var configButton = new qx.ui.toolbar.MenuButton("",app.getExternFile("extern/config.png"), mainMenu);
-		configButton.setShow("icon");
-		rightToolBar.add(configButton);
-		headerComposite.add(rightToolBar);
-		/*var frame = new qx.ui.embed.ThemedIframe("http://www.google.com").set({allowStretchY : true,  height : 400});
-		this.add(frame);
-		this.setContentPadding(0);
-		alert(frame.getMaxHeight());
-                //layout.setColumnFlex(0, 1);*/
-
-		this.add(this._tabView, {flex:1});
-
-
-
-	},
-	members:
-	{
-		_tabView: null,
-		_keyEnterPressed: function(url)
-		{
-			this._tabView.gotoUrl(url);
-		}
-	}
-	
-});
-
 
 // Define class for this application.
 qx.Class.define('eyeos.application.ebrowser',
@@ -108,15 +17,72 @@ qx.Class.define('eyeos.application.ebrowser',
 	},
 	members:
 	{
+		_tabView: null,
 		drawGUI: function()
 		{
-			var main = new eyeos.ebrowser.MainWindow(this).set({width : 800, height : 600});
-			main.open();
-			main.moveTo(100, 30);
+			var main = new eyeos.ui.Window(this, "Eye Browser").set({width : 800, height : 600});
+			main.setShowStatusbar(true);
+			this._tabView = new eyeos.ebrowser.WebView();
+			var layout = new qx.ui.layout.VBox(5);
+			main.setLayout(layout);
+			var headerComposite = new qx.ui.container.Composite(new qx.ui.layout.HBox(4));
+			headerComposite.setPadding(10);
+			main.add(headerComposite);
 
-			main.addListener("post", function(e) {
-				alert(e.getData());
-			}, this);
+			var toolBar = new qx.ui.toolbar.ToolBar();
+			var backwardButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/backward.png"));
+			backwardButton.setShow("icon");
+			toolBar.add(backwardButton);
+			var forwardButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/forward.png"));
+			forwardButton.setShow("icon");
+			toolBar.add(forwardButton);
+			var homeButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/home.png"));
+			homeButton.setShow("icon");
+			toolBar.add(homeButton);
+			var refreshButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/refresh.png"));
+			refreshButton.setShow("icon");
+			toolBar.add(refreshButton);
+			headerComposite.add(toolBar);
+
+
+			var urlEditor = new qx.ui.form.TextField().set({
+				allowGrowX : true,
+				placeholder : "Input url",
+				maxWidth : 1000,
+				minWidth : 400}
+			);
+			
+			urlEditor.addListener("keypress", function(e) {
+				if (e.getKeyIdentifier() == "Enter")
+				{
+					this._tabView.gotoUrl(urlEditor.getValue());
+				}
+                	}, this);
+			headerComposite.add(urlEditor, {flex : 1});
+			
+			
+			var rightToolBar = new qx.ui.toolbar.ToolBar();
+			var goButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/go.png"));
+			goButton.setShow("icon");
+			rightToolBar.add(goButton);
+			var bookButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/book.png"));
+			bookButton.setShow("icon");
+			rightToolBar.add(bookButton);
+			var historyButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/history.png"));
+			historyButton.setShow("icon");
+			rightToolBar.add(historyButton);
+
+			var mainMenu = new qx.ui.menu.Menu();
+			var undoButton = new qx.ui.menu.Button("Undo", "icon/16/actions/edit-undo.png");
+			mainMenu.add(undoButton);
+			var configButton = new qx.ui.toolbar.MenuButton("",this.getExternFile("extern/config.png"), mainMenu);
+			configButton.setShow("icon");
+			rightToolBar.add(configButton);
+			headerComposite.add(rightToolBar);
+
+			main.add(this._tabView, {flex:1});
+			main.open();
+
 		},
 		getExternFile: function(path)
 		{
@@ -124,6 +90,7 @@ qx.Class.define('eyeos.application.ebrowser',
 		}
 	}
 });
+
 
 qx.Class.define("eyeos.ebrowser.WebView",
 {
@@ -135,16 +102,14 @@ qx.Class.define("eyeos.ebrowser.WebView",
 		this.add(page1);
 		var page2 = new eyeos.ebrowser.TabPage("");
 		this.add(page2);
-//		alert(page1);
-//		alert(page2);
 		this.addListener("changeSelection", function(e){
-//			alert(this.getChildren().length);
-//			pages = getSelection();
-//			alert(pages);
-//			alert(this.indexOf(pages[0])
-			//alert(e.getCurrentTarget());
-			alert(this.getSelection());
-			alert(e.getData() == page2);
+			var page = this.getSelection()[0];
+			if (this.indexOf(page) == this.getChildren().length - 1)
+			{
+				var pageLast = new eyeos.ebrowser.TabPage("");
+				this.add(pageLast);
+				page.setLabel("new page");
+			}
 		}, this);
 	},
 	members:
@@ -187,9 +152,7 @@ qx.Class.define("eyeos.ebrowser.NewPage",
         construct : function()
         {
                 this.base(arguments);
-                //this.setLabel(label);
-                //this.setShowCloseButton(true);
+                this.setShowCloseButton(false);
         }
 });
-
 
