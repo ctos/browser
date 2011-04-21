@@ -38,10 +38,17 @@ qx.Class.define('eyeos.application.ebrowser',
 			toolBar.add(forwardButton);
 			var homeButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/home.png"));
 			homeButton.setShow("icon");
+			homeButton.addListener("execute", function(){
+				this._tabView.gotoUrl("http://www.google.com");
+			}, this);
 			toolBar.add(homeButton);
 			var refreshButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/refresh.png"));
 			refreshButton.setShow("icon");
+			refreshButton.addListener("execute", function(e) {
+				this._tabView.refresh();
+			}, this);
 			toolBar.add(refreshButton);
+
 			headerComposite.add(toolBar);
 
 
@@ -80,6 +87,11 @@ qx.Class.define('eyeos.application.ebrowser',
 			rightToolBar.add(configButton);
 			headerComposite.add(rightToolBar);
 
+			this._tabView.addListener('urlChanged', function(e){
+					//alert(e.getData());
+					urlEditor.setValue(e.getData());
+				}
+			)
 			main.add(this._tabView, {flex:1});
 			main.open();
 
@@ -98,15 +110,18 @@ qx.Class.define("eyeos.ebrowser.WebView",
 	construct : function()
 	{
                 this.base(arguments);
-		var page1 = new eyeos.ebrowser.TabPage("page1");
+		var page1 = new eyeos.ebrowser.TabPage("new page");
 		this.add(page1);
 		var page2 = new eyeos.ebrowser.TabPage("");
 		this.add(page2);
+		page2.setShowCloseButton(false);
 		this.addListener("changeSelection", function(e){
 			var page = this.getSelection()[0];
 			if (this.indexOf(page) == this.getChildren().length - 1)
 			{
+				page.setShowCloseButton(true);
 				var pageLast = new eyeos.ebrowser.TabPage("");
+				pageLast.setShowCloseButton(false);
 				this.add(pageLast);
 				page.setLabel("new page");
 			}
@@ -118,7 +133,18 @@ qx.Class.define("eyeos.ebrowser.WebView",
 		{
 			var currentPage = this.getSelection()[0];
 			currentPage.load(url);
+			this.fireDataEvent('urlChanged', currentPage.getUrl());
+		},
+		refresh: function()
+		{
+			var currentPage = this.getSelection()[0];
+			currentPage.reload();
+			this.fireDataEvent('urlChanged', currentPage.getUrl());
 		}
+	},
+	events:
+	{
+		urlChanged: 'qx.event.type.Data'
 	}
 });
 
@@ -134,6 +160,9 @@ qx.Class.define("eyeos.ebrowser.TabPage",
 		this._htmlFrame = new qx.ui.embed.ThemedIframe("http://www.google.com");
 		this.setLayout(new qx.ui.layout.VBox);
 		this.add(this._htmlFrame, {flex:1});
+		this._htmlFrame.addListener('navigate', function(e) {
+			alert(e.getData());
+		}, this);
         },
 	members:
 	{
@@ -141,6 +170,15 @@ qx.Class.define("eyeos.ebrowser.TabPage",
 		load: function(url)
 		{
 			this._htmlFrame.setSource(url);
+		},
+		reload: function()
+		{
+			this._htmlFrame.reload();
+			//this._htmlFrame.setSource(this._htmlFrame.getSource());
+		},
+		getUrl: function()
+		{
+			return this._htmlFrame.getSource();
 		}
 	}
 });
