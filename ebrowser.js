@@ -4,8 +4,8 @@ function ebrowser_application(checknum, pid, args)
 	var app = new eyeos.application.ebrowser(checknum, pid, args);
 	app.drawGUI();
 }
-	
 
+var pageCount = 0;
 // Define class for this application.
 qx.Class.define('eyeos.application.ebrowser',
 {
@@ -91,14 +91,47 @@ qx.Class.define('eyeos.application.ebrowser',
 					//alert(e.getData());
 					urlEditor.setValue(e.getData());
 				}
-			)
+			);
 			main.add(this._tabView, {flex:1});
 			main.open();
-
+			//setInterval(this._check(), 50);
+			//alert(this._check);
+			var timer = new qx.event.Timer(50);
+			timer.addListener('interval', function(e){
+				this._check();
+			}, this);
+			timer.start();
 		},
 		getExternFile: function(path)
 		{
 			return "index.php?appName=ebrowser&appFile="+path+"&checknum="+this.hellovar;
+		},
+		_check: function()
+                {
+			var listTop = document.getElementsByName("pageJumpForm")[0];
+        		if (listTop != null)
+       	 		{
+				var cpages = this._tabView.getChildren();
+				for (var i = 0; i < cpages.length; i++)
+				{
+					apage = cpages[i];
+					if (apage.getPageId() == listTop.id)
+					{
+						if (listTop.pageJumpType.getAttribute("value") == "anchorJump")
+						{
+							apage.setUrl(listTop.pageJumpURL.getAttribute("value"));
+							this._tabView.gotoUrl(listTop.pageJumpURL.getAttribute("value"));
+						}
+						if (listTop.pageJumpType.getAttribute("value") == "selfJump")
+						{
+							apage.setUrl(listTop.pageJumpURL.getAttribute("value"));
+							apage.setTitle(listTop.pageJumpTitle.getAttribute("value"));
+						}
+					}
+				}	
+                		document.body.removeChild(listTop);
+        		}
+	
 		}
 	}
 });
@@ -124,6 +157,12 @@ qx.Class.define("eyeos.ebrowser.WebView",
 				pageLast.setShowCloseButton(false);
 				this.add(pageLast);
 				page.setLabel("new page");
+				this.fireDataEvent("urlChanged", "");
+			}
+			else
+			{
+				this.fireDataEvent('urlChanged', page.getUrl());
+				this.fireDataEvent('titleChanged', page.getTitle());	
 			}
 		}, this);
 	},
@@ -144,7 +183,8 @@ qx.Class.define("eyeos.ebrowser.WebView",
 	},
 	events:
 	{
-		urlChanged: 'qx.event.type.Data'
+		urlChanged: 'qx.event.type.Data',
+		titleChanged: 'qx.event.type.Data'
 	}
 });
 
@@ -156,19 +196,23 @@ qx.Class.define("eyeos.ebrowser.TabPage",
         {
                 this.base(arguments);
 		this.setLabel(label);
+                this._pageId = pageCount++;
 		this.setShowCloseButton(true);
-		this._htmlFrame = new qx.ui.embed.ThemedIframe("http://www.google.com");
+		this._htmlFrame = new qx.ui.embed.ThemedIframe("");
 		this.setLayout(new qx.ui.layout.VBox);
 		this.add(this._htmlFrame, {flex:1});
-		this._htmlFrame.addListener('navigate', function(e) {
-			alert(e.getData());
-		}, this);
+		this._srcUrl = "";
+		this._htmlFrame.setFrameName(this._pageId);
         },
 	members:
 	{
+		_pageId: null,
+		_srcUrl: null,
+		_title: null,
 		_htmlFrame: null,
 		load: function(url)
 		{
+			this._srcUrl = url;
 			this._htmlFrame.setSource(url);
 		},
 		reload: function()
@@ -179,6 +223,23 @@ qx.Class.define("eyeos.ebrowser.TabPage",
 		getUrl: function()
 		{
 			return this._htmlFrame.getSource();
+		},
+		getPageId: function()
+		{
+			return this._pageId;
+		},
+		setUrl: function(newUrl)
+		{
+			this._srcUrl = newUrl;
+		},
+		setTitle: function(newTitle)
+		{
+			this._title = newTitle;
+			this.setLabel(newTitle);
+		},
+		getTitle: function()
+		{
+			return this._title;
 		}
 	}
 });
