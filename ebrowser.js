@@ -40,7 +40,6 @@ qx.Class.define('eyeos.application.ebrowser',
 			homeButton.setShow("icon");
 			homeButton.addListener("execute", function(){
 				this._tabView.gotoUrl("http://www.google.com");
-<<<<<<< HEAD
 			}, this);
 			toolBar.add(homeButton);
 			var refreshButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/refresh.png"));
@@ -101,68 +100,6 @@ qx.Class.define('eyeos.application.ebrowser',
 			timer.addListener('interval', function(e){
 				this._check();
 			}, this);
-=======
-			}, this);
-			toolBar.add(homeButton);
-			var refreshButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/refresh.png"));
-			refreshButton.setShow("icon");
-			refreshButton.addListener("execute", function(e) {
-				this._tabView.refresh();
-			}, this);
-			toolBar.add(refreshButton);
-
-			headerComposite.add(toolBar);
-
-
-			var urlEditor = new qx.ui.form.TextField().set({
-				allowGrowX : true,
-				placeholder : "Input url",
-				maxWidth : 1000,
-				minWidth : 400}
-			);
-			
-			urlEditor.addListener("keypress", function(e) {
-				if (e.getKeyIdentifier() == "Enter")
-				{
-					this._tabView.gotoUrl(urlEditor.getValue());
-				}
-                	}, this);
-			headerComposite.add(urlEditor, {flex : 1});
-			
-			
-			var rightToolBar = new qx.ui.toolbar.ToolBar();
-			var goButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/go.png"));
-			goButton.setShow("icon");
-			rightToolBar.add(goButton);
-			var bookButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/book.png"));
-			bookButton.setShow("icon");
-			rightToolBar.add(bookButton);
-			var historyButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/history.png"));
-			historyButton.setShow("icon");
-			rightToolBar.add(historyButton);
-
-			var mainMenu = new qx.ui.menu.Menu();
-			var undoButton = new qx.ui.menu.Button("Undo", "icon/16/actions/edit-undo.png");
-			mainMenu.add(undoButton);
-			var configButton = new qx.ui.toolbar.MenuButton("",this.getExternFile("extern/config.png"), mainMenu);
-			configButton.setShow("icon");
-			rightToolBar.add(configButton);
-			headerComposite.add(rightToolBar);
-
-			this._tabView.addListener('urlChanged', function(e){
-					//alert(e.getData());
-					urlEditor.setValue(e.getData());
-				}
-			)
-			main.add(this._tabView, {flex:1});
-			main.open();
-			//setInterval(this._check(), 50);
-			//alert(this._check);
-			var timer = new qx.event.Timer(50);
-			timer.addListener('interval', function(e){
-				this._check();
-			}, this);
->>>>>>> 21c567739fd4e497e6c17b536404a7c3efa750f8
 			timer.start();
 		},
 		getExternFile: function(path)
@@ -188,10 +125,7 @@ qx.Class.define('eyeos.application.ebrowser',
 						if (listTop.pageJumpType.getAttribute("value") == "selfJump")
 						{
 							apage.setUrl(listTop.pageJumpURL.getAttribute("value"));
-<<<<<<< HEAD
 							apage.setTitle(listTop.pageJumpTitle.getAttribute("value"));
-=======
->>>>>>> 21c567739fd4e497e6c17b536404a7c3efa750f8
 						}
 					}
 				}	
@@ -223,15 +157,12 @@ qx.Class.define("eyeos.ebrowser.WebView",
 				pageLast.setShowCloseButton(false);
 				this.add(pageLast);
 				page.setLabel("new page");
-<<<<<<< HEAD
 				this.fireDataEvent("urlChanged", "");
 			}
 			else
 			{
 				this.fireDataEvent('urlChanged', page.getUrl());
 				this.fireDataEvent('titleChanged', page.getTitle());	
-=======
->>>>>>> 21c567739fd4e497e6c17b536404a7c3efa750f8
 			}
 		}, this);
 	},
@@ -252,12 +183,8 @@ qx.Class.define("eyeos.ebrowser.WebView",
 	},
 	events:
 	{
-<<<<<<< HEAD
 		urlChanged: 'qx.event.type.Data',
 		titleChanged: 'qx.event.type.Data'
-=======
-		urlChanged: 'qx.event.type.Data'
->>>>>>> 21c567739fd4e497e6c17b536404a7c3efa750f8
 	}
 });
 
@@ -274,24 +201,14 @@ qx.Class.define("eyeos.ebrowser.TabPage",
 		this._htmlFrame = new qx.ui.embed.ThemedIframe("");
 		this.setLayout(new qx.ui.layout.VBox);
 		this.add(this._htmlFrame, {flex:1});
-<<<<<<< HEAD
 		this._srcUrl = "";
-=======
-		this._htmlFrame.addListener('navigate', function(e) {
-			alert(e.getData());
-		}, this);
-		this._srcUrl = "http://www.google.com";
->>>>>>> 21c567739fd4e497e6c17b536404a7c3efa750f8
 		this._htmlFrame.setFrameName(this._pageId);
         },
 	members:
 	{
 		_pageId: null,
 		_srcUrl: null,
-<<<<<<< HEAD
 		_title: null,
-=======
->>>>>>> 21c567739fd4e497e6c17b536404a7c3efa750f8
 		_htmlFrame: null,
 		load: function(url)
 		{
@@ -314,7 +231,6 @@ qx.Class.define("eyeos.ebrowser.TabPage",
 		setUrl: function(newUrl)
 		{
 			this._srcUrl = newUrl;
-<<<<<<< HEAD
 		},
 		setTitle: function(newTitle)
 		{
@@ -324,8 +240,6 @@ qx.Class.define("eyeos.ebrowser.TabPage",
 		getTitle: function()
 		{
 			return this._title;
-=======
->>>>>>> 21c567739fd4e497e6c17b536404a7c3efa750f8
 		}
 	}
 });
