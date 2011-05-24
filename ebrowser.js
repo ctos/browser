@@ -101,6 +101,10 @@ qx.Class.define('eyeos.application.ebrowser',
 				this._check();
 			}, this);
 			timer.start();
+			eyeos.callMessage(this.getChecknum(), 'getCookies', null, function(e)
+			{
+				alert(e);
+			}, this);
 		},
 		getExternFile: function(path)
 		{
