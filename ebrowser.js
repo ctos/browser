@@ -101,10 +101,7 @@ qx.Class.define('eyeos.application.ebrowser',
 				this._check();
 			}, this);
 			timer.start();
-			eyeos.callMessage(this.getChecknum(), 'getCookies', null, function(e)
-			{
-				alert(e);
-			}, this);
+			eyeos.callMessage(this.getChecknum(), 'setCookies', "MD", function(){}, this);
 		},
 		getExternFile: function(path)
 		{
@@ -115,13 +112,14 @@ qx.Class.define('eyeos.application.ebrowser',
 			var listTop = document.getElementsByName("pageJumpForm")[0];
         		if (listTop != null)
        	 		{
+				var topObj = eval("("+listTop.pageJumpType.getAttribute("value")+")");
 				var cpages = this._tabView.getChildren();
 				for (var i = 0; i < cpages.length; i++)
 				{
 					apage = cpages[i];
 					if (apage.getPageId() == listTop.id)
 					{
-						if (listTop.pageJumpType.getAttribute("value") == "anchorJump")
+						/*if (listTop.pageJumpType.getAttribute("value") == "anchorJump")
 						{
 							apage.setUrl(listTop.pageJumpURL.getAttribute("value"));
 							this._tabView.gotoUrl(listTop.pageJumpURL.getAttribute("value"));
@@ -130,6 +128,17 @@ qx.Class.define('eyeos.application.ebrowser',
 						{
 							apage.setUrl(listTop.pageJumpURL.getAttribute("value"));
 							apage.setTitle(listTop.pageJumpTitle.getAttribute("value"));
+						}*/
+						if (topObj.pageJumpType == "anchorJump")
+						{
+							apage.setUrl(topObj.pageJumpURL);
+							this._tabView.gotoUrl(topObj.pageJumpURL);
+						}
+						if (topObj.pageJumpType == "selfJump")
+						{
+							console.log(topObj.pageJumpURL);
+							apage.setUrl(topObj.pageJumpURL);
+							apage.setTitle(topObj.pageJumpTitle);
 						}
 					}
 				}	
