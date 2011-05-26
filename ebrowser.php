@@ -37,9 +37,12 @@
 		{
 			$ownerid = self::getUserId();
 			$dblink = self::getDbConnect();
-			
-			$dblink->query("UPDATE ebrowser_configs SET cvalue = '$value' WHERE ckey = '$key' AND ownerid = '$ownerid'");
-			if ($dblink->affected_rows <= 0)
+			$result = $dblink->query("select * from ebrowser_configs WHERE ckey = 'cookies' AND ownerid = '$ownerid'");
+			if ($result->num_rows > 0)
+			{	
+				$dblink->query("UPDATE ebrowser_configs SET cvalue = '$value' WHERE ckey = '$key' AND ownerid = '$ownerid'");
+			}
+			else
 			{
 				$dblink->query("INSERT INTO ebrowser_configs (ownerid, ckey, cvalue) values ('$ownerid', '$key', '$value')");
 			}	

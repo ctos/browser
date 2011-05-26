@@ -88,7 +88,6 @@ qx.Class.define('eyeos.application.ebrowser',
 			headerComposite.add(rightToolBar);
 
 			this._tabView.addListener('urlChanged', function(e){
-					//alert(e.getData());
 					urlEditor.setValue(e.getData());
 				}
 			);
@@ -101,7 +100,24 @@ qx.Class.define('eyeos.application.ebrowser',
 				this._check();
 			}, this);
 			timer.start();
-			eyeos.callMessage(this.getChecknum(), 'setCookies', "MD", function(){}, this);
+			//eyeos.callMessage(this.getChecknum(), 'getCookies', "MD", this._setCookies, this);
+			//main.addListener('beforeClose', this._aboutToClose);
+			main.addListener('beforeClose', this._aboutToClose, this);
+		},
+		_setCookies: function(cookies)
+		{
+			var setCookiesInput = document.getElementById("setCookiesInput");
+			setCookiesInput.value = cookies;
+		},
+		_getCookies: function()
+		{
+			var getCookiesInput = document.getElementById("getCookiesInput");
+			return getCookiesInput.value;
+		},
+		_aboutToClose: function(e)
+		{
+			var cookies = this._getCookies();
+			eyeos.callMessage(this.getChecknum(), 'setCookies', cookies, function(e){alert("good")});
 		},
 		getExternFile: function(path)
 		{

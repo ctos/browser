@@ -30,7 +30,7 @@ DROP TABLE IF EXISTS `ebrowser_configs`;
 CREATE TABLE `ebrowser_configs` (
   `cid` int(20) NOT NULL AUTO_INCREMENT,
   `ckey` varchar(1024) NOT NULL,
-  `cvalue` varchar(1024) NOT NULL,
+  `cvalue` longtext NOT NULL,
   `ownerid` varchar(128) NOT NULL,
   PRIMARY KEY (`cid`),
   KEY `ownerid` (`ownerid`)
