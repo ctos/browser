@@ -100,24 +100,31 @@ qx.Class.define('eyeos.application.ebrowser',
 				this._check();
 			}, this);
 			timer.start();
-			//eyeos.callMessage(this.getChecknum(), 'getCookies', "MD", this._setCookies, this);
-			//main.addListener('beforeClose', this._aboutToClose);
+			eyeos.callMessage(this.getChecknum(), 'getCookies', "MD", this._setCookies, this);
 			main.addListener('beforeClose', this._aboutToClose, this);
 		},
 		_setCookies: function(cookies)
 		{
 			var setCookiesInput = document.getElementById("setCookiesInput");
 			setCookiesInput.value = cookies;
+			alert("cookie ok");
 		},
 		_getCookies: function()
 		{
 			var getCookiesInput = document.getElementById("getCookiesInput");
 			return getCookiesInput.value;
 		},
+		_delCookies: function()
+		{
+			var delCookiesInput = document.getElementById("delCookiesInput");
+			delCookiesInput.value = "1";
+		},
 		_aboutToClose: function(e)
 		{
 			var cookies = this._getCookies();
+			this._delCookies();
 			eyeos.callMessage(this.getChecknum(), 'setCookies', cookies, function(e){alert("good")});
+			alert("closed");
 		},
 		getExternFile: function(path)
 		{

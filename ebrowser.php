@@ -29,7 +29,7 @@
 			}
 			else
 			{
-				return "fuck";
+				return "";
 			}
 		}
 		
