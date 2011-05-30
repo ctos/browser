@@ -95,11 +95,51 @@
 			$queryStr = "DELETE FROM ebrowser_historys WHERE ownerid = '$ownerid'";
 			$dblink->query($queryStr);
 		}
+
 		public static function addHistory($history)
 		{
 			$ownerid = self::getUserId();
 			$dblink = self::getDbConnect();
-			
+		}
+		
+		public static function getAllBookmarks()
+		{
+			$ownerid = self::getUserId();
+			$dblink = self::getDbConnect();
+			$queryStr = "SELECT * FROM ebrowser_bookmarks WHERE ownerid = '$ownerid'";
+			$dblink->query($queryStr);
+		}
+
+		public static function delBookmarkById($id)
+		{
+			$ownerid = self::getUserId();
+			$dblink = self::getDbConnect();
+			$queryStr = "DELETE FROM ebrowser_bookmarks WHERE ownerid = '$ownerid'";
+			$dblink->query($queryStr);
+		}
+
+		public static function updateBookmark($bookmark)
+		{
+			$ownerid = self::getUserId();
+			$dblink = self::getDbConnect();
+			//$queryStr = "DELETE FROM ebrowser_historys WHERE ownerid = '$ownerid'";
+			$dblink->query($queryStr);
+		}
+
+		public static function createBookmark($bookmark)
+		{
+			$ownerid = self::getUserId();
+			$dblink = self::getDbConnect();
+			//$queryStr = "DELETE FROM ebrowser_historys WHERE ownerid = '$ownerid'";
+			$dblink->query($queryStr);
+		}
+		
+		public static function getBookmarksByGroup($group)
+		{
+			$ownerid = self::getUserId();
+			$dblink = self::getDbConnect();
+			$queryStr = "SELECT * FROM ebrowser_bookmarks WHERE ownerid = '$ownerid' AND bgroup = '$group'";
+			$dblink->query($queryStr);
 		}
 	}
 ?>
