@@ -18,10 +18,8 @@
 
 		public static function getConfig($key)
 		{
-//			$owenid  = ProcManager::getInstance()->getCurrentProcess()->getLoginContext()->getEyeosUser()->getId();
 			$ownerid = self::getUserId();
 			$dblink = self::getDbConnect();
-//			return "SELECT cvalue FROM ebrowser_configs WHERE ckey = '".$key."' AND ownerid = '".($owenid->getId())."'";
 			$result = $dblink->query("SELECT cvalue FROM ebrowser_configs WHERE ckey = '$key' AND ownerid = '$ownerid'");
 			if ($configObject = $result->fetch_object())
 			{
@@ -56,6 +54,52 @@
 		public static function setCookies($cookies)
 		{
 			self::setConfig("cookies", "$cookies");
+		}
+		
+		public static function getAllHistorys()
+		{
+			$ownerid = self::getUserId();
+			$dblink = self::getDbConnect();
+			$queryStr = "SELECT * FROM ebrowser_historys WHERE ownerid = '$ownerid'";
+			$dblink->query($queryStr);
+		}
+		
+		public static function getHistroysByDate($startDate, $endDate)
+		{
+			$ownerid = self::getUserId();
+			$dblink = self::getDbConnect();
+			$queryStr = "SELECT * FROM ebrowser_historys WHERE ownerid = '$ownerid' AND hdate > $startDate AND hdate < $endDate";
+			$dblink->query($queryStr);
+		}
+
+		public static function delHistoryById($id)
+		{
+			$ownerid = self::getUserId();
+			$dblink = self::getDbConnect();
+			$queryStr = "DELETE FROM ebrowser_historys WHERE ownerid = '$ownerid' AND hid = $id";
+			$dblink->query($queryStr);
+		}
+		
+		public static function delHistorysByDate($startDate, $endDate)
+		{
+			$ownerid = self::getUserId();
+			$dblink = self::getDbConnect();
+			$queryStr = "DELETE FROM ebrowser_historys WHERE ownerid = '$ownerid' AND hdate > $startDate AND hdate < $endDate";
+			$dblink->query($queryStr);
+		}
+		
+		public static function delAllHistorys()
+		{
+			$ownerid = self::getUserId();
+			$dblink = self::getDbConnect();
+			$queryStr = "DELETE FROM ebrowser_historys WHERE ownerid = '$ownerid'";
+			$dblink->query($queryStr);
+		}
+		public static function addHistory($history)
+		{
+			$ownerid = self::getUserId();
+			$dblink = self::getDbConnect();
+			
 		}
 	}
 ?>

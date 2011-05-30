@@ -237,6 +237,11 @@ qx.Class.define("eyeos.ebrowser.WebView",
 		getCurrentPage: function()
 		{
 			return this.getSelection()[0];
+		},
+		openInNewTab: function(url)
+		{
+			var allPages = this.getChildren();
+			var lastPage = allPages[allPages.length - 1];
 		}
 	},
 	events:
