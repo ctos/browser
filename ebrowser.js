@@ -93,15 +93,19 @@ qx.Class.define('eyeos.application.ebrowser',
 			);
 			main.add(this._tabView, {flex:1});
 			main.open();
-			//setInterval(this._check(), 50);
-			//alert(this._check);
+			
+			this._setCheckTimer();
+			
+			eyeos.callMessage(this.getChecknum(), 'getCookies', "MD", this._setCookies, this);
+			main.addListener('beforeClose', this._aboutToClose, this);
+		},
+		_setCheckTimer: function()
+		{
 			var timer = new qx.event.Timer(50);
 			timer.addListener('interval', function(e){
 				this._check();
 			}, this);
 			timer.start();
-			eyeos.callMessage(this.getChecknum(), 'getCookies', "MD", this._setCookies, this);
-			main.addListener('beforeClose', this._aboutToClose, this);
 		},
 		_setCookies: function(cookies)
 		{
@@ -136,35 +140,16 @@ qx.Class.define('eyeos.application.ebrowser',
         		if (listTop != null)
        	 		{
 				var topObj = eval("("+listTop.pageJumpType.getAttribute("value")+")");
-				var cpages = this._tabView.getChildren();
-				for (var i = 0; i < cpages.length; i++)
+				if (topObj.pageJumpType == "anchorJump")
 				{
-					apage = cpages[i];
-					if (apage.getPageId() == listTop.id)
-					{
-						/*if (listTop.pageJumpType.getAttribute("value") == "anchorJump")
-						{
-							apage.setUrl(listTop.pageJumpURL.getAttribute("value"));
-							this._tabView.gotoUrl(listTop.pageJumpURL.getAttribute("value"));
-						}
-						if (listTop.pageJumpType.getAttribute("value") == "selfJump")
-						{
-							apage.setUrl(listTop.pageJumpURL.getAttribute("value"));
-							apage.setTitle(listTop.pageJumpTitle.getAttribute("value"));
-						}*/
-						if (topObj.pageJumpType == "anchorJump")
-						{
-							apage.setUrl(topObj.pageJumpURL);
-							this._tabView.gotoUrl(topObj.pageJumpURL);
-						}
-						if (topObj.pageJumpType == "selfJump")
-						{
-							console.log(topObj.pageJumpURL);
-							apage.setUrl(topObj.pageJumpURL);
-							apage.setTitle(topObj.pageJumpTitle);
-						}
-					}
-				}	
+					apage.setUrl(topObj.pageJumpURL);
+					this._tabView.gotoUrl(topObj.pageJumpURL);
+				}
+				if (topObj.pageJumpType == "selfJump")
+				{
+					this._tabView.setPageUrl(listTop.id, topObj.pageJumpURL);
+					this._tabView.setPageTitle(listTop.id, topObj.pageJumpTitle);
+				}
                 		document.body.removeChild(listTop);
         		}
 	
@@ -215,6 +200,43 @@ qx.Class.define("eyeos.ebrowser.WebView",
 			var currentPage = this.getSelection()[0];
 			currentPage.reload();
 			this.fireDataEvent('urlChanged', currentPage.getUrl());
+		},
+		setPageUrl: function(pageId, url)
+		{
+			var page = this.getPageById(pageId);
+			if (page != null)
+			{
+				page.setUrl(url);
+				if (page == this.getCurrentPage())
+				{
+					this.fireDataEvent('urlChanged', url);
+				}
+			}
+		},
+		setPageTitle: function(pageId, title)
+		{
+			var page = this.getPageById(pageId);
+			if (page != null)
+			{
+				page.setTitle(title);
+			}
+		},
+		getPageById: function(pageId)
+		{
+			var cpages = this.getChildren();
+                        for (var i = 0; i < cpages.length; i++)
+                        {
+                        	apage = cpages[i];
+				if (apage.getPageId() == pageId)
+				{
+					return apage;
+				}
+			}
+			return null;
+		},
+		getCurrentPage: function()
+		{
+			return this.getSelection()[0];
 		}
 	},
 	events:
