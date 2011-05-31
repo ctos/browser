@@ -61,7 +61,14 @@
 			$ownerid = self::getUserId();
 			$dblink = self::getDbConnect();
 			$queryStr = "SELECT * FROM ebrowser_historys WHERE ownerid = '$ownerid'";
-			$dblink->query($queryStr);
+			$result = $dblink->query($queryStr);
+			$rtArray = array();
+			while ($hisObject = $result->fetch_object())
+			{
+				$objArr = array("hid"=>$hisObject->hid, "htitle"=>$hisObject->htitle, "hurl"=>$hisObject->hurl, "hdate"=>$hisObject->hdate);
+				array_push($rtArray, $objArr);
+			}
+			return $rtArray;
 		}
 		
 		public static function getHistroysByDate($startDate, $endDate)
@@ -70,6 +77,13 @@
 			$dblink = self::getDbConnect();
 			$queryStr = "SELECT * FROM ebrowser_historys WHERE ownerid = '$ownerid' AND hdate > $startDate AND hdate < $endDate";
 			$dblink->query($queryStr);
+			$rtArray = array();
+			while ($hisObject = $result->fetch_object())
+			{
+				$objArr = array("hid"=>$hisObject->hid, "htitle"=>$hisObject->htitle, "hurl"=>$hisObject->hurl, "hdate"=>$hisObject->hdate);
+				array_push($rtArray, $objArr);
+			}
+			return $rtArray;
 		}
 
 		public static function delHistoryById($id)
@@ -100,6 +114,11 @@
 		{
 			$ownerid = self::getUserId();
 			$dblink = self::getDbConnect();
+			$hdate = $history["hdate"];
+			$htitle = $history["htitle"];
+			$hurl = $history["hurl"];
+			$queryStr = "INSERT INTO ebrowser_historys (htitle, hurl, hdate, ownerid) values ('$htitle', '$hurl', $hdate, '$ownerid')";
+			$dblink->query(queryStr);
 		}
 		
 		public static function getAllBookmarks()

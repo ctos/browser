@@ -96,7 +96,8 @@ qx.Class.define('eyeos.application.ebrowser',
 			
 			this._setCheckTimer();
 			
-			eyeos.callMessage(this.getChecknum(), 'getCookies', "MD", this._setCookies, this);
+			//eyeos.callMessage(this.getChecknum(), 'getCookies', "MD", this._setCookies, this);
+			eyeos.callMessage(this.getChecknum(), 'getAllHistorys', null, function(e){console.log(e)}, this);
 			main.addListener('beforeClose', this._aboutToClose, this);
 		},
 		_setCheckTimer: function()
@@ -142,8 +143,17 @@ qx.Class.define('eyeos.application.ebrowser',
 				var topObj = eval("("+listTop.pageJumpType.getAttribute("value")+")");
 				if (topObj.pageJumpType == "anchorJump")
 				{
-					apage.setUrl(topObj.pageJumpURL);
-					this._tabView.gotoUrl(topObj.pageJumpURL);
+					if (topObj.pageJumpTarget == '_blank')
+					{
+						this._tabView.openInNewTab(topObj.pageJumpURL);
+				//		console.log(topObj.pageJumpTarget);
+					}
+					else
+					{
+					//apage.setUrl(topObj.pageJumpURL);
+						this._tabView.gotoUrl(topObj.pageJumpURL);
+						console.log(topObj.pageJumpTarget);
+					}
 				}
 				if (topObj.pageJumpType == "selfJump")
 				{
@@ -242,6 +252,15 @@ qx.Class.define("eyeos.ebrowser.WebView",
 		{
 			var allPages = this.getChildren();
 			var lastPage = allPages[allPages.length - 1];
+			lastPage.load(url)
+			this.fireDataEvent('urlChanged', url);
+			this.setSelection([lastPage]);
+		},
+		printCurrentPage: function()
+		{
+			var currentPage = this.getCurrentPage();
+			var currentId = current.getPageId();
+			
 		}
 	},
 	events:
