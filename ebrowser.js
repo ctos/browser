@@ -32,9 +32,15 @@ qx.Class.define('eyeos.application.ebrowser',
 			var toolBar = new qx.ui.toolbar.ToolBar();
 			var backwardButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/backward.png"));
 			backwardButton.setShow("icon");
+			backwardButton.addListener("execute", function(e){
+				this._tabView.getBackPage();
+			}, this);
 			toolBar.add(backwardButton);
 			var forwardButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/forward.png"));
 			forwardButton.setShow("icon");
+			forwardButton.addListener("execute", function(e){
+				this._tabView.getForwardPage();
+			}, this);
 			toolBar.add(forwardButton);
 			var homeButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/home.png"));
 			homeButton.setShow("icon");
@@ -99,6 +105,7 @@ qx.Class.define('eyeos.application.ebrowser',
 			//eyeos.callMessage(this.getChecknum(), 'getCookies', "MD", this._setCookies, this);
 			eyeos.callMessage(this.getChecknum(), 'getAllHistorys', null, function(e){console.log(e)}, this);
 			main.addListener('beforeClose', this._aboutToClose, this);
+			this._tabView.openHistoryPage();	
 		},
 		_setCheckTimer: function()
 		{
@@ -237,7 +244,7 @@ qx.Class.define("eyeos.ebrowser.WebView",
                         for (var i = 0; i < cpages.length; i++)
                         {
                         	apage = cpages[i];
-				if (apage.getPageId() == pageId)
+				if (apage.getPageId() == pageId && typeof(apage) == "eyeos.ebrowser.TabPage");
 				{
 					return apage;
 				}
@@ -248,19 +255,56 @@ qx.Class.define("eyeos.ebrowser.WebView",
 		{
 			return this.getSelection()[0];
 		},
-		openInNewTab: function(url)
+		getLastPage: function()
 		{
 			var allPages = this.getChildren();
 			var lastPage = allPages[allPages.length - 1];
+			return lastPage;
+		},
+		openInNewTab: function(url)
+		{
+			var lastPage = this.getLastPage();
 			lastPage.load(url)
 			this.fireDataEvent('urlChanged', url);
 			this.setSelection([lastPage]);
+		},
+		openHistoryPage: function()
+		{
+			var lastPage = this.getLastPage();
+			this.remove(lastPage);
+			
+			var historyPage = new eyeos.ebrowser.HistoryPage("123");
+			this.add(historyPage);
+			this.setSelection([historyPage]);			
+
+			//var newPageLast = new eyeos.ebrowser.TabPage("");
+                        //newPageLast.setShowCloseButton(false);
+                        //this.add(newPageLast);
+
+		},
+		openBookmarkPage: function()
+		{
 		},
 		printCurrentPage: function()
 		{
 			var currentPage = this.getCurrentPage();
 			var currentId = current.getPageId();
-			
+		},
+		getForwardPage: function()
+		{
+			var currentPage = this.getCurrentPage();
+			if (currentPage != null && typeof(currentPage) != "eyeos.ebrowser.TabPage")
+			{
+				currentPage.goForward();
+			}
+		},
+		getBackPage: function()
+		{
+			var currentPage = this.getCurrentPage();
+			if (currentPage != null && typeof(currentPage) != "eyeos.ebrowser.TabPage")
+			{
+				currentPage.goBack();
+			}
 		}
 	},
 	events:
@@ -285,6 +329,8 @@ qx.Class.define("eyeos.ebrowser.TabPage",
 		this.add(this._htmlFrame, {flex:1});
 		this._srcUrl = "";
 		this._htmlFrame.setFrameName(this._pageId);
+		this._historyList = [];
+		this._historyIndex = -1;
         },
 	members:
 	{
@@ -292,6 +338,8 @@ qx.Class.define("eyeos.ebrowser.TabPage",
 		_srcUrl: null,
 		_title: null,
 		_htmlFrame: null,
+		_historyList: null,
+		_historyIndex: null,
 		load: function(url)
 		{
 			this._srcUrl = url;
@@ -313,6 +361,17 @@ qx.Class.define("eyeos.ebrowser.TabPage",
 		setUrl: function(newUrl)
 		{
 			this._srcUrl = newUrl;
+			if (this._historyList == -1)
+			{
+				this._historyList.push(newUrl);
+				this._historyIndex++;
+			}
+			else if (newUrl != this._historyList[this._historyIndex])
+			{
+				this._historyList.splice(this._historyIndex);
+				this._historyList.push(newUrl);
+				this._historyIndex++;
+			}
 		},
 		setTitle: function(newTitle)
 		{
@@ -322,6 +381,24 @@ qx.Class.define("eyeos.ebrowser.TabPage",
 		getTitle: function()
 		{
 			return this._title;
+		},
+		goForward: function()
+		{
+			if (this._historyIndex >= this._historyList.length - 1)
+			{
+				return;
+			}
+			this._historyIndex++;
+			this.load(this._historyList[this._historyIndex]);
+		},
+		goBack: function()
+		{
+			if (this._historyIndex <= 0)
+			{
+				return;
+			}
+			this._historyIndex--;
+			this.load(this._historyList[this._historyIndex]);
 		}
 	}
 });
@@ -337,3 +414,31 @@ qx.Class.define("eyeos.ebrowser.NewPage",
         }
 });
 
+qx.Class.define("eyeos.ebrowser.HistoryPage",
+{
+	extend : qx.ui.tabview.Page,
+
+	construct : function(checknum)
+	{
+		this.base(arguments);
+		var layout = new qx.ui.layout.VBox(5);
+		this.setLayout(layout);
+      		var box = new qx.ui.layout.VBox();
+      		box.setSpacing(10);
+		this.setShowCloseButton(true);
+		this._htmlArea = new qx.ui.embed.Html("<h1><a href=\"google.com\">Hello World</a></h1>");
+		var container = new qx.ui.container.Composite(box);
+		this.add(container);
+		container.add(this._htmlArea);
+	},
+	members:
+	{
+		_htmlArea: null,
+		_getAllHistorys: function()
+		{
+		},
+		_getHistorysByDate: function()
+		{
+		}
+	}
+});
