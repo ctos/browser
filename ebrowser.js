@@ -22,7 +22,7 @@ qx.Class.define('eyeos.application.ebrowser',
 		{
 			var main = new eyeos.ui.Window(this, "Eye Browser").set({width : 800, height : 600});
 			main.setShowStatusbar(true);
-			this._tabView = new eyeos.ebrowser.WebView();
+			this._tabView = new eyeos.ebrowser.WebView(this.getChecknum());
 			var layout = new qx.ui.layout.VBox(5);
 			main.setLayout(layout);
 			var headerComposite = new qx.ui.container.Composite(new qx.ui.layout.HBox(4));
@@ -103,7 +103,6 @@ qx.Class.define('eyeos.application.ebrowser',
 			this._setCheckTimer();
 			
 			//eyeos.callMessage(this.getChecknum(), 'getCookies', "MD", this._setCookies, this);
-			eyeos.callMessage(this.getChecknum(), 'getAllHistorys', null, function(e){console.log(e)}, this);
 			main.addListener('beforeClose', this._aboutToClose, this);
 			this._tabView.openHistoryPage();	
 		},
@@ -153,13 +152,11 @@ qx.Class.define('eyeos.application.ebrowser',
 					if (topObj.pageJumpTarget == '_blank')
 					{
 						this._tabView.openInNewTab(topObj.pageJumpURL);
-				//		console.log(topObj.pageJumpTarget);
 					}
 					else
 					{
 					//apage.setUrl(topObj.pageJumpURL);
 						this._tabView.gotoUrl(topObj.pageJumpURL);
-						console.log(topObj.pageJumpTarget);
 					}
 				}
 				if (topObj.pageJumpType == "selfJump")
@@ -178,9 +175,10 @@ qx.Class.define('eyeos.application.ebrowser',
 qx.Class.define("eyeos.ebrowser.WebView",
 {
 	extend : qx.ui.tabview.TabView,
-	construct : function()
+	construct : function(checknum)
 	{
                 this.base(arguments);
+		this._checknum = checknum;
 		var page1 = new eyeos.ebrowser.TabPage("new page");
 		this.add(page1);
 		var page2 = new eyeos.ebrowser.TabPage("");
@@ -206,6 +204,7 @@ qx.Class.define("eyeos.ebrowser.WebView",
 	},
 	members:
 	{
+		_checknum: null,
 		gotoUrl: function(url)
 		{
 			var currentPage = this.getSelection()[0];
@@ -273,7 +272,7 @@ qx.Class.define("eyeos.ebrowser.WebView",
 			var lastPage = this.getLastPage();
 			this.remove(lastPage);
 			
-			var historyPage = new eyeos.ebrowser.HistoryPage("123");
+			var historyPage = new eyeos.ebrowser.HistoryPage(this._checknum);
 			this.add(historyPage);
 			this.setSelection([historyPage]);			
 
@@ -421,24 +420,44 @@ qx.Class.define("eyeos.ebrowser.HistoryPage",
 	construct : function(checknum)
 	{
 		this.base(arguments);
+		this._checknum = checknum;
 		var layout = new qx.ui.layout.VBox(5);
 		this.setLayout(layout);
       		var box = new qx.ui.layout.VBox();
       		box.setSpacing(10);
 		this.setShowCloseButton(true);
-		this._htmlArea = new qx.ui.embed.Html("<h1><a href=\"google.com\">Hello World</a></h1>");
 		var container = new qx.ui.container.Composite(box);
 		this.add(container);
-		container.add(this._htmlArea);
+		this._tableModel = new qx.ui.table.model.Simple();
+		this._tableModel.setColumns([ "Date", "Title", "URL" ]);
+		this._historyTable = new qx.ui.table.Table(this._tableModel);
+		container.add(this._historyTable);
+		this._getAllHistorys();
+		this._historyTable.addListener("cellClick", this._cellCilcked, this);
 	},
 	members:
 	{
-		_htmlArea: null,
+		_checknum: null,
+		_historyTable: null,
+		_tableModel: null,
 		_getAllHistorys: function()
 		{
+			var allHistory = [];
+			eyeos.callMessage(this._checknum, "getAllHistorys", null, function(historys){
+				for (i = 0; i < historys.length; i++)
+				{
+					var oneHistory = historys[i];
+					allHistory.push([oneHistory.hdate, oneHistory.htitle, oneHistory.hurl]);
+				}
+				this._tableModel.setData(allHistory);		
+			}, this);
 		},
 		_getHistorysByDate: function()
 		{
+		},
+		_cellCilcked: function(cellEvent)
+		{
+			alert("fuck");
 		}
 	}
 });
