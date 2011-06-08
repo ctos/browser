@@ -275,7 +275,7 @@ qx.Class.define("eyeos.ebrowser.WebView",
 			var historyPage = new eyeos.ebrowser.HistoryPage(this._checknum);
 			this.add(historyPage);
 			this.setSelection([historyPage]);			
-
+			historyPage.addListener("historyClick", function(e){this.openInNewTab(e.getData())}, this);
 			//var newPageLast = new eyeos.ebrowser.TabPage("");
                         //newPageLast.setShowCloseButton(false);
                         //this.add(newPageLast);
@@ -457,7 +457,14 @@ qx.Class.define("eyeos.ebrowser.HistoryPage",
 		},
 		_cellCilcked: function(cellEvent)
 		{
-			alert("fuck");
+			var col = cellEvent.getColumn();
+			var row = cellEvent.getRow();
+			var url = this._tableModel.getValue(col, row);
+			this.fireDataEvent('historyClick', url);
 		}
+	},
+	events:
+	{
+		historyClick: 'qx.event.type.Data'
 	}
 });
