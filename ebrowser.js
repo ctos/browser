@@ -453,6 +453,9 @@ qx.Class.define("eyeos.ebrowser.HistoryPage",
       		box.setSpacing(10);
 		this.setShowCloseButton(true);
 		var container = new qx.ui.container.Composite(box);
+		var button = new qx.ui.form.Button("Clear History");
+		button.addListener('execute', this._delAllHistorys, this);
+		container.add(button);
 		this.add(container);
 		this._tableModel = new qx.ui.table.model.Simple();
 		this._tableModel.setColumns([ "Date", "Title", "URL" ]);
@@ -480,6 +483,12 @@ qx.Class.define("eyeos.ebrowser.HistoryPage",
 		},
 		_getHistorysByDate: function()
 		{
+		},
+		_delAllHistorys: function()
+		{
+			eyeos.callMessage(this._checknum, "delAllHistorys", null, function(e){
+				this._getAllHistorys();
+			}, this);
 		},
 		_cellCilcked: function(cellEvent)
 		{
