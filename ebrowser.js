@@ -84,6 +84,9 @@ qx.Class.define('eyeos.application.ebrowser',
 			var historyButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/history.png"));
 			historyButton.setShow("icon");
 			rightToolBar.add(historyButton);
+			historyButton.addListener('execute', function(e){
+				this._tabView.openHistoryPage();
+			}, this);
 
 			var mainMenu = new qx.ui.menu.Menu();
 			var undoButton = new qx.ui.menu.Button("Undo", "icon/16/actions/edit-undo.png");
@@ -104,7 +107,6 @@ qx.Class.define('eyeos.application.ebrowser',
 			
 			//eyeos.callMessage(this.getChecknum(), 'getCookies', "MD", this._setCookies, this);
 			main.addListener('beforeClose', this._aboutToClose, this);
-			this._tabView.openHistoryPage();	
 		},
 		_setCheckTimer: function()
 		{
@@ -155,14 +157,14 @@ qx.Class.define('eyeos.application.ebrowser',
 					}
 					else
 					{
-					//apage.setUrl(topObj.pageJumpURL);
 						this._tabView.gotoUrl(topObj.pageJumpURL);
 					}
 				}
 				if (topObj.pageJumpType == "selfJump")
 				{
-					this._tabView.setPageUrl(listTop.id, topObj.pageJumpURL);
-					this._tabView.setPageTitle(listTop.id, topObj.pageJumpTitle);
+		//			this._tabView.setPageUrl(listTop.id, topObj.pageJumpURL);
+	//				this._tabView.setPageTitle(listTop.id, topObj.pageJumpTitle);
+					this._tabView.setPageTitleAndUrl(listTop.id, topObj.pageJumpTitle, topObj.pageJumpURL);
 				}
                 		document.body.removeChild(listTop);
         		}
@@ -236,6 +238,30 @@ qx.Class.define("eyeos.ebrowser.WebView",
 			{
 				page.setTitle(title);
 			}
+		},
+		setPageTitleAndUrl: function(pageId, title, url)
+		{
+			this.setPageTitle(pageId, title);
+			this.setPageUrl(pageId, url);
+			var curTime = this.getTimestamp();
+			eyeos.callMessage(this._checknum, 'addHistory', {hdate: this.getTimestamp(), hurl: url, htitle: title}, function(e){}, this);	
+		},
+		getTimestamp: function()
+		{
+			var curDate = new Date();
+			var timestamp = "";
+			timestamp += curDate.getFullYear();
+			timestamp += "-";
+			timestamp += curDate.getMonth();
+			timestamp += "-";
+			timestamp += curDate.getDate();
+			timestamp += " ";
+			timestamp += curDate.getHours();
+			timestamp += ":";
+			timestamp += curDate.getMinutes();
+			timestamp += ":";
+			timestamp += curDate.getSeconds();
+			return timestamp;
 		},
 		getPageById: function(pageId)
 		{
@@ -459,7 +485,7 @@ qx.Class.define("eyeos.ebrowser.HistoryPage",
 		{
 			var col = cellEvent.getColumn();
 			var row = cellEvent.getRow();
-			var url = this._tableModel.getValue(col, row);
+			var url = this._tableModel.getValue(2, row);
 			this.fireDataEvent('historyClick', url);
 		}
 	},

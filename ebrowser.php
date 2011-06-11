@@ -117,8 +117,9 @@
 			$hdate = $history["hdate"];
 			$htitle = $history["htitle"];
 			$hurl = $history["hurl"];
-			$queryStr = "INSERT INTO ebrowser_historys (htitle, hurl, hdate, ownerid) values ('$htitle', '$hurl', $hdate, '$ownerid')";
-			$dblink->query(queryStr);
+			$queryStr = "INSERT INTO ebrowser_historys (htitle, hurl, hdate, ownerid) values ('$htitle', '$hurl', '$hdate', '$ownerid')";
+			$dblink->query($queryStr);
+			return $queryStr;
 		}
 		
 		public static function getAllBookmarks()
@@ -126,22 +127,42 @@
 			$ownerid = self::getUserId();
 			$dblink = self::getDbConnect();
 			$queryStr = "SELECT * FROM ebrowser_bookmarks WHERE ownerid = '$ownerid'";
-			$dblink->query($queryStr);
+			$result = $dblink->query($queryStr);
+			$rtArray = array();
+                        while ($bookmarkObject = $result->fetch_object())
+                        {
+                                $objArr = array("bid"=>$bookmarkObject->bid, "btitle"=>$bookmarkObject->btitle, "burl"=>$bookmarkObject->burl, "bgroup"=>$bookmarkObject->bgroup);
+                                array_push($rtArray, $objArr);
+                        }
+                        return $rtArray;
 		}
 
 		public static function delBookmarkById($id)
 		{
 			$ownerid = self::getUserId();
 			$dblink = self::getDbConnect();
-			$queryStr = "DELETE FROM ebrowser_bookmarks WHERE ownerid = '$ownerid'";
+			$queryStr = "DELETE FROM ebrowser_bookmarks WHERE ownerid = '$ownerid' AND bid = '$id'";
 			$dblink->query($queryStr);
+		}
+		
+		public static function delAllBookmarks()
+		{
+			$ownerid = self::getUserId();
+			$dblink = self::getDbConnect();
+			$queryStr = "DELETE FROM ebrowser_bookmarks WHERE ownerid = '$ownerid' ";
+			$dblink->query($queryStr);
+
 		}
 
 		public static function updateBookmark($bookmark)
 		{
 			$ownerid = self::getUserId();
 			$dblink = self::getDbConnect();
-			//$queryStr = "DELETE FROM ebrowser_historys WHERE ownerid = '$ownerid'";
+			$bid = $bookmark['bid'];
+			$btitle = $bookmark['btitle'];
+			$burl = $bookmark['burl'];
+			$bgroup = $bookmark['bgroup'];
+			$queryStr = "UPDATE ebrowser_historys set btitle = '$btitle', burl = '$burl', bgroup = '$bgroup' WHERE ownerid = '$ownerid' and bid = $bid";
 			$dblink->query($queryStr);
 		}
 
@@ -149,7 +170,10 @@
 		{
 			$ownerid = self::getUserId();
 			$dblink = self::getDbConnect();
-			//$queryStr = "DELETE FROM ebrowser_historys WHERE ownerid = '$ownerid'";
+			$btitle = $bookmark['btitle'];
+			$burl = $bookmark['burl'];
+			$bgroup = $bookmark['bgroup'];
+			$queryStr = "INSERT INTO  ebrowser_historys (btitle, burl, bgroup, ownerid) VALUES ('$btitle', '$burl', '$bgroup', '$ownerid')";
 			$dblink->query($queryStr);
 		}
 		
@@ -159,6 +183,14 @@
 			$dblink = self::getDbConnect();
 			$queryStr = "SELECT * FROM ebrowser_bookmarks WHERE ownerid = '$ownerid' AND bgroup = '$group'";
 			$dblink->query($queryStr);
+			$result = $dblink->query($queryStr);
+			$rtArray = array();
+                        while ($bookmarkObject = $result->fetch_object())
+                        {
+                                $objArr = array("bid"=>$bookmarkObject->bid, "btitle"=>$bookmarkObject->btitle, "burl"=>$bookmarkObject->burl, "bgroup"=>$bookmarkObject->bgroup);
+                                array_push($rtArray, $objArr);
+                        }
+                        return $rtArray;
 		}
 	}
 ?>
