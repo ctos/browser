@@ -162,7 +162,7 @@
 			$btitle = $bookmark['btitle'];
 			$burl = $bookmark['burl'];
 			$bgroup = $bookmark['bgroup'];
-			$queryStr = "UPDATE ebrowser_historys set btitle = '$btitle', burl = '$burl', bgroup = '$bgroup' WHERE ownerid = '$ownerid' and bid = $bid";
+			$queryStr = "UPDATE ebrowser_bookmarks set btitle = '$btitle', burl = '$burl', bgroup = '$bgroup' WHERE ownerid = '$ownerid' and bid = $bid";
 			$dblink->query($queryStr);
 		}
 
@@ -173,8 +173,9 @@
 			$btitle = $bookmark['btitle'];
 			$burl = $bookmark['burl'];
 			$bgroup = $bookmark['bgroup'];
-			$queryStr = "INSERT INTO  ebrowser_historys (btitle, burl, bgroup, ownerid) VALUES ('$btitle', '$burl', '$bgroup', '$ownerid')";
+			$queryStr = "INSERT INTO  ebrowser_bookmarks (btitle, burl, bgroup, ownerid) VALUES ('$btitle', '$burl', '$bgroup', '$ownerid')";
 			$dblink->query($queryStr);
+			return $queryStr;
 		}
 		
 		public static function getBookmarksByGroup($group)

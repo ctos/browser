@@ -81,6 +81,10 @@ qx.Class.define('eyeos.application.ebrowser',
 			var bookButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/book.png"));
 			bookButton.setShow("icon");
 			rightToolBar.add(bookButton);
+			bookButton.addListener('execute', function(e){
+				this._tabView.addBookmark();
+			}, this);
+
 			var historyButton = new qx.ui.toolbar.Button("",this.getExternFile("extern/history.png"));
 			historyButton.setShow("icon");
 			rightToolBar.add(historyButton);
@@ -89,8 +93,12 @@ qx.Class.define('eyeos.application.ebrowser',
 			}, this);
 
 			var mainMenu = new qx.ui.menu.Menu();
-			var undoButton = new qx.ui.menu.Button("Undo", "icon/16/actions/edit-undo.png");
-			mainMenu.add(undoButton);
+			var viewBookButton = new qx.ui.menu.Button("ViewBookmarks");
+			viewBookButton.addListener("execute", function(e)
+			{
+				this._tabView.openBookmarkPage();
+			}, this);
+			mainMenu.add(viewBookButton);
 			var configButton = new qx.ui.toolbar.MenuButton("",this.getExternFile("extern/config.png"), mainMenu);
 			configButton.setShow("icon");
 			rightToolBar.add(configButton);
@@ -120,7 +128,6 @@ qx.Class.define('eyeos.application.ebrowser',
 		{
 			var setCookiesInput = document.getElementById("setCookiesInput");
 			setCookiesInput.value = cookies;
-			alert("cookie ok");
 		},
 		_getCookies: function()
 		{
@@ -197,7 +204,7 @@ qx.Class.define("eyeos.ebrowser.WebView",
 				page.setLabel("new page");
 				this.fireDataEvent("urlChanged", "");
 			}
-			else
+			else if (page.getPageId() != -1)
 			{
 				this.fireDataEvent('urlChanged', page.getUrl());
 				this.fireDataEvent('titleChanged', page.getTitle());	
@@ -269,7 +276,7 @@ qx.Class.define("eyeos.ebrowser.WebView",
                         for (var i = 0; i < cpages.length; i++)
                         {
                         	apage = cpages[i];
-				if (apage.getPageId() == pageId && typeof(apage) == "eyeos.ebrowser.TabPage");
+				if (apage.getPageId() == pageId)
 				{
 					return apage;
 				}
@@ -302,6 +309,7 @@ qx.Class.define("eyeos.ebrowser.WebView",
 			this.add(historyPage);
 			this.setSelection([historyPage]);			
 			historyPage.addListener("historyClick", function(e){this.openInNewTab(e.getData())}, this);
+			historyPage.setLabel("Historys");
 			//var newPageLast = new eyeos.ebrowser.TabPage("");
                         //newPageLast.setShowCloseButton(false);
                         //this.add(newPageLast);
@@ -309,6 +317,14 @@ qx.Class.define("eyeos.ebrowser.WebView",
 		},
 		openBookmarkPage: function()
 		{
+			var lastPage = this.getLastPage();
+			this.remove(lastPage);
+			
+			var bookmarkPage = new eyeos.ebrowser.BookmarkPage(this._checknum);
+			this.add(bookmarkPage);
+			this.setSelection([bookmarkPage]);			
+			bookmarkPage.addListener("bookmarkClick", function(e){this.openInNewTab(e.getData())}, this);
+			bookmarkPage.setLabel("Bookmarks");
 		},
 		printCurrentPage: function()
 		{
@@ -329,6 +345,16 @@ qx.Class.define("eyeos.ebrowser.WebView",
 			if (currentPage != null && typeof(currentPage) != "eyeos.ebrowser.TabPage")
 			{
 				currentPage.goBack();
+			}
+		},
+		addBookmark: function()
+		{
+			var currentPage = this.getCurrentPage();
+			if (currentPage != null && typeof(currentPage) != "eyeos.ebrowser.TabPage")
+			{
+				var title = currentPage.getTitle();
+				var url = currentPage.getUrl();
+				eyeos.callMessage(this._checknum, 'createBookmark', {btitle: title, burl: url, bgroup: 'none'}, function(e){}, this);
 			}
 		}
 	},
@@ -428,7 +454,7 @@ qx.Class.define("eyeos.ebrowser.TabPage",
 	}
 });
 
-qx.Class.define("eyeos.ebrowser.NewPage",
+/*qx.Class.define("eyeos.ebrowser.NewPage",
 {
         extend : qx.ui.tabview.Page,
 
@@ -436,8 +462,15 @@ qx.Class.define("eyeos.ebrowser.NewPage",
         {
                 this.base(arguments);
                 this.setShowCloseButton(false);
-        }
-});
+        },
+	members :
+	{
+		getPageById: function()
+		{
+			return -1;
+		}
+	}
+});*/
 
 qx.Class.define("eyeos.ebrowser.HistoryPage",
 {
@@ -496,10 +529,92 @@ qx.Class.define("eyeos.ebrowser.HistoryPage",
 			var row = cellEvent.getRow();
 			var url = this._tableModel.getValue(2, row);
 			this.fireDataEvent('historyClick', url);
+		},
+		getPageId: function()
+		{
+			return -1;
 		}
 	},
 	events:
 	{
 		historyClick: 'qx.event.type.Data'
+	}
+});
+
+qx.Class.define("eyeos.ebrowser.BookmarkPage",
+{
+	extend : qx.ui.tabview.Page,
+
+	construct : function(checknum)
+	{
+		this.base(arguments);
+		this._checknum = checknum;
+		var layout = new qx.ui.layout.VBox(5);
+		this.setLayout(layout);
+      		var box = new qx.ui.layout.VBox();
+      		box.setSpacing(10);
+		this.setShowCloseButton(true);
+		var container = new qx.ui.container.Composite(box);
+	//	var button = new qx.ui.form.Button("Clear History");
+	//	button.addListener('execute', this._delAllBookmarks, this);
+		//container.add(button);
+		this.add(container);
+		this._tableModel = new qx.ui.table.model.Simple();
+		this._tableModel.setColumns(["Id", "Title", "URL", "Go", "Delete"]);
+		this._bookmarkTable = new qx.ui.table.Table(this._tableModel);
+		container.add(this._bookmarkTable);
+		this._getAllBookmarks();
+		this._bookmarkTable.addListener("cellClick", this._cellCilcked, this);
+	},
+	members:
+	{
+		_checknum: null,
+		_bookmarkTable: null,
+		_tableModel: null,
+		_getAllBookmarks: function()
+		{
+			var allBookmarks = [];
+			eyeos.callMessage(this._checknum, "getAllBookmarks", null, function(bookmarks){
+				for (i = 0; i < bookmarks.length; i++)
+				{
+					var oneBookmark = bookmarks[i];
+					allBookmarks.push([oneBookmark.bid, oneBookmark.btitle, oneBookmark.burl, "Go", "Delete"]);
+				}
+				this._tableModel.setData(allBookmarks);		
+			}, this);
+		},
+		_getBookmarksByDate: function()
+		{
+		},
+		_delAllBookmarks: function()
+		{
+			eyeos.callMessage(this._checknum, "delAllBookmarks", null, function(e){
+				this._getAllBookmarks();
+			}, this);
+		},
+		_cellCilcked: function(cellEvent)
+		{
+			var col = cellEvent.getColumn();
+			var row = cellEvent.getRow();
+			if (col == 4)
+			{
+				var bid = this._tableModel.getValue(0, row);
+				eyeos.callMessage(this._checknum, 'delBookmarkById', bid, function(e){}, this);
+				this._getAllBookmarks();
+			}
+			else
+			{
+				var url = this._tableModel.getValue(1, row);
+				this.fireDataEvent('bookmarkClick', url);
+			}
+		},
+		getPageId: function()
+		{
+			return -1;
+		}
+	},
+	events:
+	{
+		bookmarkClick: 'qx.event.type.Data'
 	}
 });
